@@ -39,7 +39,7 @@ class Chat extends Component
             'content' => $this->content,
         ]);
 
-        broadcast(new MessageSent($message))->toOthers();
+        broadcast(new MessageSent($message));
 
         // Add message to current user's view immediately
         $this->messages[] = $message->toArray();
