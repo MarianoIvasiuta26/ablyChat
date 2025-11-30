@@ -60,12 +60,16 @@ class Chat extends Component
         ];
 
         $this->content = '';
+
+        $this->dispatch('message-sent');
     }
 
     #[On('echo:chat.global,MessageSent')]
     public function messageReceived($data)
     {
         $this->messages[] = $data['message'];
+
+        $this->dispatch('message-sent');
     }
 
     public function render()
