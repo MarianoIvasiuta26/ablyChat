@@ -22,11 +22,12 @@ class Chat extends Component
         $this->messages = Message::with('user')
             ->latest()
             ->take(50)
-            ->orderBy('created_at')
             ->get()
+            ->sortBy('created_at')
             ->map(function ($message) {
                 return [
                     'id' => $message->id,
+                    'user_id' => $message->user_id,
                     'username' => $message->user->name ?? $message->username,
                     'content' => $message->content,
                     'created_at' => $message->created_at->diffForHumans(),
@@ -52,6 +53,7 @@ class Chat extends Component
         // Add message to current user's view immediately
         $this->messages[] = [
             'id' => $message->id,
+            'user_id' => auth()->id(),
             'username' => auth()->user()->name,
             'content' => $message->content,
             'created_at' => 'ahora',
