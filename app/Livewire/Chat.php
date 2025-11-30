@@ -10,7 +10,6 @@ use Livewire\Component;
 class Chat extends Component
 {
     public $messages = [];
-    public $username = 'Alumno';
     public $content = '';
 
     public function mount()
@@ -20,29 +19,43 @@ class Chat extends Component
 
     public function loadMessages()
     {
-        $this->messages = Message::latest()
+        $this->messages = Message::with('user')
+            ->latest()
             ->take(50)
             ->orderBy('created_at')
             ->get()
+            ->map(function ($message) {
+                return [
+                    'id' => $message->id,
+                    'username' => $message->user->name ?? $message->username,
+                    'content' => $message->content,
+                    'created_at' => $message->created_at->diffForHumans(),
+                ];
+            })
             ->toArray();
     }
 
     public function sendMessage()
     {
         $this->validate([
-            'username' => 'required|string|max:50',
             'content' => 'required|string|max:500',
         ]);
 
         $message = Message::create([
-            'username' => $this->username,
+            'user_id' => auth()->id(),
+            'username' => auth()->user()->name,
             'content' => $this->content,
         ]);
 
         broadcast(new MessageSent($message));
 
         // Add message to current user's view immediately
-        $this->messages[] = $message->toArray();
+        $this->messages[] = [
+            'id' => $message->id,
+            'username' => auth()->user()->name,
+            'content' => $message->content,
+            'created_at' => 'ahora',
+        ];
 
         $this->content = '';
     }
