@@ -75,14 +75,26 @@ class PrivateChat extends Component
 
     public function messageReceived($event)
     {
+        $incomingMessage = $event['message'];
+        $authId = auth()->id();
+        $senderId = $incomingMessage['user_id'];
+
+        \Illuminate\Support\Facades\Log::info('MessageReceived', [
+            'auth_id' => $authId,
+            'sender_id' => $senderId,
+            'msg_id' => $incomingMessage['id'],
+            'is_own' => $authId == $senderId
+        ]);
+
         // Ignore own messages
-        if ($event['message']['user_id'] === auth()->id()) {
+        if ($authId == $senderId) {
+            \Illuminate\Support\Facades\Log::info('Ignoring own message');
             return;
         }
 
         // Only handle messages for the active conversation
-        if ($this->activeConversation && $event['message']['conversation_id'] === $this->activeConversation->id) {
-            $this->messages[] = $event['message'];
+        if ($this->activeConversation && $incomingMessage['conversation_id'] === $this->activeConversation->id) {
+            $this->messages[] = $incomingMessage;
             $this->dispatch('message-sent');
         }
     }

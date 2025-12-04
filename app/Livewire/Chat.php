@@ -67,7 +67,16 @@ class Chat extends Component
     #[On('echo:chat.global,MessageSent')]
     public function messageReceived($data)
     {
-        $this->messages[] = $data['message'];
+        $incomingMessage = $data['message'];
+
+        // Check if message already exists to prevent duplicates
+        foreach ($this->messages as $msg) {
+            if ($msg['id'] == $incomingMessage['id']) {
+                return;
+            }
+        }
+
+        $this->messages[] = $incomingMessage;
 
         $this->dispatch('message-sent');
     }
